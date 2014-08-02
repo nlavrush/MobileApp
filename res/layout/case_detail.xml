@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+	<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/caseTitle" android:layout_gravity="center_horizontal" android:capitalize="words"
+			android:textColor="#ff32ffd0" android:textAlignment="center" android:phoneNumber="false"
+			android:textSize="20dp" android:linksClickable="false"
+			android:singleLine="false" android:editable="false"/>
+	<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:hint="Case desription"
+			android:id="@+id/caseText" android:contentDescription="Information" android:layout_weight="2"
+			android:gravity="center"/>
+	<ImageView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/caseImageView" android:contentDescription="Photos" android:layout_weight="3"/>
+	<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="bottom" android:gravity="center">
+		<Button
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/add_file"
+				android:id="@+id/buttonFile"
+				android:onClick="attachFile"/>
+		<Button
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/take_picture"
+				android:id="@+id/buttonPicture"
+				android:onClick="takePicture"/>
+	</LinearLayout>
+</LinearLayout>
