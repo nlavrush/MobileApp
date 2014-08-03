@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 
 public class MainActivity extends Activity {
+	private static final String TAG = "MainActivity";
 	public final static String EXTRA_MESSAGE = "com.eccentex.dcm.MESSAGE";
 	public final static String CASE_TITLE = "com.eccentex.dcm.CASE_TITLE";
 	public final static String CASE_TEXT = "com.eccentex.dcm.CASE_TEXT";
@@ -20,7 +21,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main);
 	}
 	public void sendMessage(View view){
-		Log.d("MobileApp", "Button clicked");
+		Log.d(TAG, "Button clicked");
 		Intent intent = new Intent(this, CaseDetailActivity.class);
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		String title = editText.getText().toString();
