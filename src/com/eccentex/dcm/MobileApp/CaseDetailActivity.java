@@ -32,8 +32,8 @@ public class CaseDetailActivity extends Activity {
 
 		setContentView(R.layout.case_detail);
 		Intent intent = getIntent();
-		String title = intent.getStringExtra(MainActivity.CASE_TITLE);
-		String description = intent.getStringExtra(MainActivity.CASE_TEXT);
+		String title = "";//intent.getStringExtra(MainActivity.CASE_TITLE);
+		String description = "";// intent.getStringExtra(MainActivity.CASE_TEXT);
 
 		TextView titleView  = (TextView) findViewById(R.id.caseTitle);
 		titleView.setText(title);

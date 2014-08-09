@@ -1,17 +1,41 @@
 package com.eccentex.dcm.MobileApp;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.content.Intent;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+import com.eccentex.dcm.MobileApp.Authentication.AccountGeneral;
 
 public class MainActivity extends Activity {
-	private static final String TAG = "MainActivity";
-	public final static String EXTRA_MESSAGE = "com.eccentex.dcm.MESSAGE";
-	public final static String CASE_TITLE = "com.eccentex.dcm.CASE_TITLE";
-	public final static String CASE_TEXT = "com.eccentex.dcm.CASE_TEXT";
+	private static final String STATE_DIALOG = "state_dialog";
+	private static final String STATE_INVALIDATE = "state_invalidate";
+
+	private String TAG = this.getClass().getSimpleName();
+	private AccountManager mAccountManager;
+	private AlertDialog mAlertDialog;
+	private boolean mInvalidate;
+	private  String mToken ="";
+
+	private void showMessage(final String msg) {
+		if (TextUtils.isEmpty(msg))
+			return;
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 	/**
 	 * Called when the activity is first created.
 	 */
@@ -19,16 +43,226 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		mAccountManager = AccountManager.get(this);
+		findViewById(R.id.login_button).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				getTokenForAccountCreateIfNeeded(AccountGeneral.ACCOUNT_TYPE, AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS);
+			}
+		});
+			findViewById(R.id.pick_button).setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					showAccountPicker(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS,true);
+				}
+			});
+	}
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (mAlertDialog != null && mAlertDialog.isShowing()) {
+			outState.putBoolean(STATE_DIALOG, true);
+			outState.putBoolean(STATE_INVALIDATE, mInvalidate);
+		}
 	}
 	public void sendMessage(View view){
 		Log.d(TAG, "Button clicked");
-		Intent intent = new Intent(this, CaseDetailActivity.class);
-		EditText editText = (EditText) findViewById(R.id.edit_message);
-		String title = editText.getText().toString();
-		intent.putExtra(CASE_TITLE, title);
-		EditText editText2 = (EditText) findViewById(R.id.edit_message2);
-		String description = editText2.getText().toString();
-		intent.putExtra(CASE_TEXT, description);
-		startActivity(intent);
+
+	}
+	/**
+	 * Add new account to the account manager
+	 * @param accountType
+	 * @param authTokenType
+	 */
+	private void addNewAccount(String accountType, String authTokenType) {
+		final AccountManagerFuture<Bundle> future = mAccountManager.addAccount(accountType, authTokenType, null, null, this, new AccountManagerCallback<Bundle>() {
+			@Override
+			public void run(AccountManagerFuture<Bundle> future) {
+				try {
+					Bundle bnd = future.getResult();
+					showMessage("Account was created");
+					Log.d("udinic", "AddNewAccount Bundle is " + bnd);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+					showMessage(e.getMessage());
+				}
+			}
+		}, null);
+	}
+
+	/**
+	 * Show all the accounts registered on the account manager. Request an auth token upon user select.
+	 * @param authTokenType
+	 */
+	private void showAccountPicker(final String authTokenType, final boolean invalidate) {
+		mInvalidate = invalidate;
+		final Account availableAccounts[] = mAccountManager.getAccountsByType(AccountGeneral.ACCOUNT_TYPE);
+
+		if (availableAccounts.length == 0) {
+			Toast.makeText(this, getString(R.string.no_account), Toast.LENGTH_SHORT).show();
+		} else {
+			String name[] = new String[availableAccounts.length];
+			for (int i = 0; i < availableAccounts.length; i++) {
+				name[i] = availableAccounts[i].name;
+			}
+
+			// Account picker
+			mAlertDialog = new AlertDialog.Builder(this).setTitle(getString(R.string.pick_account)).setAdapter(new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_list_item_1, name), new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if(invalidate)
+						invalidateAuthToken(availableAccounts[which], authTokenType);
+					else
+						getExistingAccountAuthToken(availableAccounts[which], authTokenType);
+				}
+			}).create();
+			mAlertDialog.show();
+		}
+	}
+
+	/**
+	 * Get the auth token for an existing account on the AccountManager
+	 * @param account
+	 * @param authTokenType
+	 */
+	private void getExistingAccountAuthToken(Account account, final String authTokenType) {
+		final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, this, null, null);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Bundle bnd = future.getResult();
+
+					final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+					mToken = authtoken;
+					showMessage((authtoken != null) ? "SUCCESS!" : "FAIL");
+					Log.d("udinic", "GetToken Bundle is " + bnd);
+//					Intent intent = new Intent(this, UploadFileActivity.class);
+//					intent.putExtra("token",authtoken);
+//					startActivity(intent);
+/**********************************************************************************************/
+//					DefaultHttpClient httpClient = new DefaultHttpClient();
+//					String server ="http://dcm2.eccentex.com";
+//					String port = "8086";
+//					String domain ="Eccentex_Example_Production.tenant41";
+//					String rule ="root_getListOfStates";
+//					String url =server+":"+port+"/BDS.WebService/DataServiceRest.svc/get.json/"+domain+"/"+rule;
+//					url +="?t="+authtoken;
+//					Log.d("udini", "url: "+url);
+//					HttpGet httpGet = new HttpGet(url);
+//
+//					httpGet.addHeader("Host", "dcm2.eccentex.com:8086");
+//					httpGet.addHeader("Content-Type", "application/json");
+//					HttpParams params = new BasicHttpParams();
+//
+//					httpGet.setParams(params);
+////        httpGet.getParams().setParameter("username", user).setParameter("password", pass);
+//
+//					try {
+//						HttpResponse response = httpClient.execute(httpGet);
+//
+//						String responseString = EntityUtils.toString(response.getEntity());
+//						//String responseString2 = response.getFirstHeader("Cookie").getValue();
+//						//Log.d("udini",responseString);
+//						if (response.getStatusLine().getStatusCode() != 200) {
+//							Log.d("udini", "bad!");
+//							ParseComError error = new Gson().fromJson(responseString, ParseComError.class);
+//							throw new Exception("Error signing-in ["+error.code+"] - " + error.error);
+//						}
+//
+//
+//						String pattern = "(null)";
+//						String result = responseString.replaceAll(pattern, "\"" + "$1" + "\"");
+//						JSONObject parser = new JSONObject(result);
+//						JSONObject jsonDataRoot = parser.getJSONObject("DATA");
+//						JSONObject jsonRootMobile = jsonDataRoot.getJSONObject("root_getListOfStates");
+//						JSONArray items = jsonRootMobile.getJSONArray("ITEMS");
+//						int itemsLength = items.length();
+//
+//
+//						//Log.i("udini", String.valueOf(itemsLength));
+////						State[] states = new Gson().fromJson(items,State[].class);
+//						for(int i=0; i < itemsLength; i++) {
+//							JSONObject item = items.getJSONObject(i);
+//							Log.e("udini", "number= " + item.getString("ID") + " Name = " + item.getString("STATENAME") + " Nickname= "
+//									+ item.getString("STATEABBR"));
+//						}
+//
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+
+//					return authtoken;
+
+
+
+
+
+
+
+
+					/***************************************************************************************************/
+				} catch (Exception e) {
+					e.printStackTrace();
+					showMessage(e.getMessage());
+				}
+			}
+		}).start();
+	}
+
+	/**
+	 * Invalidates the auth token for the account
+	 * @param account
+	 * @param authTokenType
+	 */
+	private void invalidateAuthToken(final Account account, String authTokenType) {
+		final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, this, null,null);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Bundle bnd = future.getResult();
+
+					final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+					mAccountManager.invalidateAuthToken(account.type, authtoken);
+					showMessage(account.name + " invalidated");
+				} catch (Exception e) {
+					e.printStackTrace();
+					showMessage(e.getMessage());
+				}
+			}
+		}).start();
+	}
+
+	/**
+	 * Get an auth token for the account.
+	 * If not exist - add it and then return its auth token.
+	 * If one exist - return its auth token.
+	 * If more than one exists - show a picker and return the select account's auth token.
+	 * @param accountType
+	 * @param authTokenType
+	 */
+	private void getTokenForAccountCreateIfNeeded(String accountType, String authTokenType) {
+		final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(accountType, authTokenType, null, this, null, null,
+				new AccountManagerCallback<Bundle>() {
+					@Override
+					public void run(AccountManagerFuture<Bundle> future) {
+						Bundle bnd = null;
+						try {
+							bnd = future.getResult();
+							final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+							showMessage(((authtoken != null) ? "SUCCESS!": "FAIL"));
+							Log.d("udinic", "GetTokenForAccount Bundle is " + bnd);
+
+						} catch (Exception e) {
+							e.printStackTrace();
+							showMessage(e.getMessage());
+						}
+					}
+				}
+				, null);
 	}
 }

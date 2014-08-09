@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
+                       android:accountType="com.eccentex.dcm"
+                       android:icon="@drawable/platform"
+                       android:smallIcon="@drawable/platform"
+                       android:label="@string/label"
+                       android:accountPreferences="@xml/prefs"/>

@@ -4,23 +4,38 @@
 			  android:layout_width="match_parent"
 			  android:layout_height="match_parent"
 			  android:orientation="vertical" >
-	<EditText android:id="@+id/edit_message"
-			  android:layout_weight="2"
-			  android:layout_width="match_parent"
-			  android:layout_height="wrap_content"
-			  android:hint="@string/edit_message" />
-	<EditText
+	<LinearLayout
+			android:orientation="horizontal"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_weight="8"
-			android:hint="@string/edit_message"
-			android:id="@+id/edit_message2"/>
-	<Button
+			android:layout_height="wrap_content">
+		<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceLarge"
+				android:text="@string/logo_name"
+				android:id="@+id/textView" android:gravity="center_vertical"
+				android:textColor="#ff1c4dff" android:textSize="40dp"/>
+		<ImageView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/imageView" android:contentDescription="@string/content"
+				android:src="@drawable/platform" android:layout_gravity="right"/>
+	</LinearLayout>
+	<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="@string/button_send"
-			android:onClick="sendMessage"
-			/>
+			android:id="@+id/textView2" android:layout_weight="1"/>
+	<Button
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:text="Login"
+			android:id="@+id/login_button" android:layout_gravity="center_horizontal"/>
+	<Button
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:text="Pick an account"
+			android:id="@+id/pick_button" android:layout_gravity="center" android:layout_weight="0"
+			android:layout_marginTop="0dp"/>
 
 </LinearLayout>
 
