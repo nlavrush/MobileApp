@@ -7,6 +7,8 @@ import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,6 +16,17 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import com.eccentex.dcm.MobileApp.Authentication.AccountGeneral;
+import com.eccentex.dcm.MobileApp.Data.JSONResponseParser;
+import com.eccentex.dcm.MobileApp.Data.State;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
 
 public class MainActivity extends Activity {
 	private static final String STATE_DIALOG = "state_dialog";
@@ -53,7 +66,7 @@ public class MainActivity extends Activity {
 			findViewById(R.id.pick_button).setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					showAccountPicker(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS,true);
+					showAccountPicker(AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS,false);
 				}
 			});
 	}
@@ -139,6 +152,7 @@ public class MainActivity extends Activity {
 					mToken = authtoken;
 					showMessage((authtoken != null) ? "SUCCESS!" : "FAIL");
 					Log.d("udinic", "GetToken Bundle is " + bnd);
+					getStatesList(mToken);
 //					Intent intent = new Intent(this, UploadFileActivity.class);
 //					intent.putExtra("token",authtoken);
 //					startActivity(intent);
@@ -264,5 +278,57 @@ public class MainActivity extends Activity {
 					}
 				}
 				, null);
+	}
+	private class DownloadUrlTask extends AsyncTask<String, Void, String>
+	{
+
+		@Override
+		protected String doInBackground(String... params) {
+			DefaultHttpClient httpClient = new DefaultHttpClient();
+			String responseString = "";
+			String url =Config.URL_PREFIX+Config.DEFAULT_HOST+":"+Config.DEFAULT_PORT+"/"+Config.DEFAULT_URL_BODY+"/"+
+					Config.DEFAULT_DOMAIN+"/"+Config.MOBILE_GET_STATES_RULE;
+			url +="?t="+params[0];
+			Log.d(TAG, "url: "+url);
+			HttpGet httpGet = new HttpGet(url);
+			httpGet.addHeader("Host", Config.DEFAULT_HOST+":"+Config.DEFAULT_PORT);
+			httpGet.addHeader("Content-Type", "application/json");
+			HttpParams httpParams = new BasicHttpParams();
+			httpGet.setParams(httpParams);
+			try {
+				HttpResponse response = httpClient.execute(httpGet);
+				responseString = EntityUtils.toString(response.getEntity());
+				if (response.getStatusLine().getStatusCode() != 200) {
+					Log.d(TAG, "bad response!");
+					throw new Exception("Error signing-in!");
+				}
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return responseString;
+		}
+		@Override
+		protected void onPostExecute(String result){
+			State states[] = JSONResponseParser.getStatesJsonResponse(result);
+			Intent intent = new Intent(getApplicationContext(), StateListActivity.class);
+//			intent.putExtra("size2",states.length);
+//			Log.e(TAG,"size2= "+states.length);
+//			for(int i=0;i<states.length;i++){
+//				intent.putExtra(Integer.toString(i),states[i]);
+//			}
+			//intent.putExtra("states",(Parcelable[])states);
+			intent.putExtra("states",State.toParcelable(states));
+			startActivity(intent);
+		}
+	}
+	private void getStatesList(final String authToken){
+
+		DownloadUrlTask task = new DownloadUrlTask();
+		task.execute(authToken);
+
 	}
 }

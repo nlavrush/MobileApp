@@ -34,11 +34,13 @@
 			<meta-data android:name="android.accounts.AccountAuthenticator"
 					   android:resource="@xml/authenticator" />
 		</service>
-		<activity android:name=".CaseDetailActivity" android:label="Caset Details"
+		<activity android:name=".StateListActivity" android:label="States"/>
+		<activity android:name=".CaseDetailActivity" android:label="Case Details"
 				android:parentActivityName="com.eccentex.dcm.MobileApp.MainActivity">
 			<meta-data
 					android:name="android.support.PARENT_ACTIVITY"
 					android:value="com.eccentex.dcm.MobileApp.MainActivity" />
 		</activity>
+
 	</application>
 </manifest>
