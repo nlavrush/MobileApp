@@ -8,18 +8,16 @@ import org.json.JSONObject;
 public class JSONResponseParser{
 	private static final String TAG = "JSONParser";
 	public  static  State[] getStatesJsonResponse(String responseString) throws Exception{
-		Log.d(TAG, responseString);
 		String pattern = "(null)";
 		String result = responseString.replaceAll(pattern, "\"" + "$1" + "\"");
 		JSONObject parser = null;
-		Log.d(TAG, responseString);
 		try {
 			parser = new JSONObject(result);
 			JSONObject jsonDataRoot = parser.getJSONObject("DATA");
 			JSONObject jsonRootMobile = jsonDataRoot.getJSONObject("root_getListOfStates");
 			JSONArray items = jsonRootMobile.getJSONArray("ITEMS");
 			int itemsLength = items.length();
-			Log.d(TAG, "length = " + itemsLength);
+			//Log.d(TAG, "length = " + itemsLength);
 			State data[] = new State[itemsLength];
 			Log.d(TAG, "data length = " + data.length);
 			for(int i=0; i < itemsLength; i++) {

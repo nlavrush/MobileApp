@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -80,9 +81,9 @@ public class StateDetailActivity extends Activity
 		return image;
 	}
 	public  void attachFile(View view){
-		Intent i = new Intent(Intent.ACTION_PICK,
-				android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-		startActivityForResult(i, REQUEST_PICK_PHOTO);
+		Intent intent = new Intent(Intent.ACTION_PICK);
+		intent.setType("image/jpg");
+		startActivityForResult(intent, REQUEST_PICK_PHOTO);
 	}
 	private void setPic() {
 
@@ -122,20 +123,31 @@ public class StateDetailActivity extends Activity
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-			//ImageView mImageView = (ImageView) findViewById(R.id.imageView);
-			//mImageView.setImageURI(Uri.fromFile(new File(mCurrentPhotoName)));
-
 			galleryAddPic();
 			setPic();
 		}
 		else if(requestCode == REQUEST_PICK_PHOTO && resultCode == RESULT_OK){
-			Uri selectedImageUri = data.getData();
-
-			Log.e(TAG, selectedImageUri.getPath());
+			//File file = new File(getPath(data.getData()));
+			Log.d(TAG, data.getData().toString());
+			//String s = getPath(data.getData());
+//			Log.e(TAG, file.getAbsolutePath());
 		}
 		else{
 			Toast.makeText(getApplicationContext(), "Couldn't take a picture!", Toast.LENGTH_LONG).show();
 		}
+	}
+	private String getPath(Uri uri)
+	{
+		String[] projection = { MediaStore.Images.Media.DATA };
+		Cursor cursor = managedQuery(uri, projection, null, null, null);
+		if (cursor == null) {Log.e(TAG,"Invalid cursor");return null;}
+		int column_index =             cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		String s=cursor.getString(column_index);
+		File file = new File(s);
+		Log.e(TAG, file.getAbsolutePath());
+		cursor.close();
+		return s;
 	}
 	private void galleryAddPic() {
 		Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
