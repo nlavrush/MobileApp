@@ -6,6 +6,7 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -150,7 +151,7 @@ public class MainActivity extends Activity {
 
 					final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
 					mToken = authtoken;
-					showMessage((authtoken != null) ? "SUCCESS!" : "FAIL");
+					//showMessage((authtoken != null) ? "SUCCESS!" : "FAIL");
 					Log.d("udinic", "GetToken Bundle is " + bnd);
 					getStatesList(mToken);
 //					Intent intent = new Intent(this, UploadFileActivity.class);
@@ -268,7 +269,7 @@ public class MainActivity extends Activity {
 						try {
 							bnd = future.getResult();
 							final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-							showMessage(((authtoken != null) ? "SUCCESS!": "FAIL"));
+							//showMessage(((authtoken != null) ? "SUCCESS!": "FAIL"));
 							Log.d("udinic", "GetTokenForAccount Bundle is " + bnd);
 
 						} catch (Exception e) {
@@ -281,14 +282,20 @@ public class MainActivity extends Activity {
 	}
 	private class DownloadUrlTask extends AsyncTask<String, Void, String>
 	{
-
-		@Override
+		//AlertDialog dlgAlert;
+		private Context mContext;
+		private String mToken;
+		public DownloadUrlTask(Context context, String authToken){
+			this.mContext = context;
+			this.mToken = authToken;
+		}
+			@Override
 		protected String doInBackground(String... params) {
 			DefaultHttpClient httpClient = new DefaultHttpClient();
 			String responseString = "";
 			String url =Config.URL_PREFIX+Config.DEFAULT_HOST+":"+Config.DEFAULT_PORT+"/"+Config.DEFAULT_URL_BODY+"/"+
 					Config.DEFAULT_DOMAIN+"/"+Config.MOBILE_GET_STATES_RULE;
-			url +="?t="+params[0];
+			url +="?t="+mToken;
 			Log.d(TAG, "url: "+url);
 			HttpGet httpGet = new HttpGet(url);
 			httpGet.addHeader("Host", Config.DEFAULT_HOST+":"+Config.DEFAULT_PORT);
@@ -313,21 +320,32 @@ public class MainActivity extends Activity {
 		}
 		@Override
 		protected void onPostExecute(String result){
-			State states[] = JSONResponseParser.getStatesJsonResponse(result);
-			Intent intent = new Intent(getApplicationContext(), StateListActivity.class);
-//			intent.putExtra("size2",states.length);
-//			Log.e(TAG,"size2= "+states.length);
-//			for(int i=0;i<states.length;i++){
-//				intent.putExtra(Integer.toString(i),states[i]);
-//			}
-			//intent.putExtra("states",(Parcelable[])states);
-			intent.putExtra("states",State.toParcelable(states));
-			startActivity(intent);
+			//!TODO Fix
+			State states[] = new State[0];
+			try {
+				states = JSONResponseParser.getStatesJsonResponse(result);
+				Intent intent = new Intent(getApplicationContext(), StateListActivity.class);
+				intent.putExtra("token",mToken);
+				intent.putExtra("states",State.toParcelable(states));
+				startActivity(intent);
+			} catch (Exception e) {
+				AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(mContext);
+				dlgAlert.setTitle("Error");
+				dlgAlert.setMessage(e.getMessage());
+				dlgAlert.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						//finish();
+											}
+				});
+				dlgAlert.setCancelable(false);
+				dlgAlert.create().show();
+			}
+
 		}
 	}
 	private void getStatesList(final String authToken){
 
-		DownloadUrlTask task = new DownloadUrlTask();
+		DownloadUrlTask task = new DownloadUrlTask(this, authToken);
 		task.execute(authToken);
 
 	}

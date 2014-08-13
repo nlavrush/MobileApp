@@ -16,4 +16,7 @@
 <string name="logo_name">AppBase</string>
 	<string name="no_account">No accounts</string>
 	<string name="pick_account">Pick Account</string>
+	<string name="take_pic">Take Picture</string>
+	<string name="pick_picture">Pick Picture</string>
+	<string name="upload_str">Upload</string>
 </resources>

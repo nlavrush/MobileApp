@@ -26,7 +26,7 @@ public class Config {
 
 
     public static final String DEFAULT_URL_BODY = "BDS.WebService/DataServiceRest.svc/get.json";
-    public static final String DEFAULT_CSM_URL_BODY = "CMS.WebService/CMSServiceRest.svc";
+    public static final String DEFAULT_CSM_URL_BODY = "CMS.WebService/CMSServiceRest.svc/createResource";
     public static final String DEFAULT_CALL_DAYS_HISTORY = "5";
     public static final String DEFAULT_UPDATE_FREQ = "30";
     public static final String DEFAULT_SYNC_PERIOD = "3";

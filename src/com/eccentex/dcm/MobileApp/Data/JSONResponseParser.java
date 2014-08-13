@@ -7,10 +7,12 @@ import org.json.JSONObject;
 
 public class JSONResponseParser{
 	private static final String TAG = "JSONParser";
-	public  static  State[] getStatesJsonResponse(String responseString){
+	public  static  State[] getStatesJsonResponse(String responseString) throws Exception{
+		Log.d(TAG, responseString);
 		String pattern = "(null)";
 		String result = responseString.replaceAll(pattern, "\"" + "$1" + "\"");
 		JSONObject parser = null;
+		Log.d(TAG, responseString);
 		try {
 			parser = new JSONObject(result);
 			JSONObject jsonDataRoot = parser.getJSONObject("DATA");
@@ -31,7 +33,12 @@ public class JSONResponseParser{
 			}
 			return data;
 		} catch (JSONException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			try {
+				throw  new Exception("Error code: "+parser.getString("ErrorCode")+"\n"+parser.getString("ErrorMessage"));
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
 		}
 
 

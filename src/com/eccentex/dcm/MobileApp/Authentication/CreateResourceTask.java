@@ -42,7 +42,8 @@ public final class CreateResourceTask extends AsyncTask<Void, Integer, String> {
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setCanceledOnTouchOutside(false);
-        mProgressDialog.setTitle("Test");
+        mProgressDialog.setTitle("Upload");
+		mProgressDialog.setMessage("Uploading file...");
         mProgressDialog.setMax(100);
         mProgressDialog.setProgress(0);
         mProgressDialog.show();
@@ -58,7 +59,7 @@ public final class CreateResourceTask extends AsyncTask<Void, Integer, String> {
     @Override
     protected void onProgressUpdate(Integer... progress) {
         super.onProgressUpdate(progress[0]);
-        Log.d(TAG, "onProgressUpdate() :: progress:" + progress[0]);
+        //Log.d(TAG, "onProgressUpdate() :: progress:" + progress[0]);
         mProgressDialog.setProgress(progress[0]);
     }
 
@@ -93,7 +94,7 @@ public final class CreateResourceTask extends AsyncTask<Void, Integer, String> {
 
             ProgressiveEntity(HttpEntity entity) {
                 this.entity = entity;
-                Log.d(TAG, "ProgressiveEntity() :: progress:" + progress);
+           //     Log.d(TAG, "ProgressiveEntity() :: progress:" + progress);
             }
 
             @Override

@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 import com.eccentex.dcm.MobileApp.Data.State;
 
 /**
@@ -16,6 +15,8 @@ import com.eccentex.dcm.MobileApp.Data.State;
  */
 public class StateListActivity extends Activity {
 	private final String TAG = this.getClass().getSimpleName();
+	private State states[] = null;
+	private String mToken;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -29,10 +30,9 @@ public class StateListActivity extends Activity {
 //				for(int i=0;i<states.length;i++){
 //					states[i] = data.getParcelable(Integer.toString(i));
 //				}
-				State states[] = State.fromParcelable(data.getParcelableArray("states"));
+                mToken = data.getString("token");
+				states = State.fromParcelable(data.getParcelableArray("states"));
 				if(states.length >0) {
-					Log.i(TAG, "Got some states!);");
-				 	Log.d(TAG, "size = "+states.length);
 					ArrayAdapter adapter = new ArrayAdapter<State>(this,
 							android.R.layout.simple_list_item_1, states);
 					ListView listView =  (ListView) findViewById(R.id.listView);
@@ -41,7 +41,15 @@ public class StateListActivity extends Activity {
 						@Override
 						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 							Log.e(TAG,"Choses state # "+position);
-							Toast.makeText(view.getContext(),"Chosen state # "+position,Toast.LENGTH_SHORT);
+							if(position>=0 && position < states.length){
+							//	Log.e(TAG,"name: "+states[position].mName);
+								Intent intent = new Intent(view.getContext(),StateDetailActivity.class);
+								intent.putExtra("token",mToken);
+								intent.putExtra("id",Integer.toString(states[position].mId));
+								intent.putExtra("name",states[position].mName);
+								intent.putExtra("abbr",states[position].mAbbr);
+								startActivity(intent);
+							}
 						}
 					});
 				}
