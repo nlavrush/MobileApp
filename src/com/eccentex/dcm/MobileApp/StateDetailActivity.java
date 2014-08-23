@@ -129,7 +129,8 @@ public class StateDetailActivity extends Activity
 		else if(requestCode == REQUEST_PICK_PHOTO && resultCode == RESULT_OK){
 			//File file = new File(getPath(data.getData()));
 			Log.d(TAG, data.getData().toString());
-			//String s = getPath(data.getData());
+			//
+			// String s = getPath(data.getData());
 //			Log.e(TAG, file.getAbsolutePath());
 		}
 		else{
